@@ -9,6 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MultimediaWidget">
+        <activity
+            android:name=".ConfigActivity"
+            android:label="@string/title_activity_config"></activity>
+
         <receiver android:name=".MmediaWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -19,7 +23,10 @@
                 android:resource="@xml/mmedia_widget_info" />
         </receiver>
 
-        <activity android:name=".MainActivity">
+        <service android:name=".MusicService" android:enabled="true" />
+
+        <activity android:name=".MainActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

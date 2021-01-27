@@ -7,126 +7,120 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.RemoteViews
-import android.widget.Toast
 
 /**
  * Implementation of App Widget functionality.
  */
 class MmediaWidget : AppWidgetProvider() {
+    private val PIC1 = "pic1"
+    private val PIC2 = "pic2"
+    private val INTENT_FLAGS = 0
+    private val mPlayerRequestCode = 0
+    private var requestCode = 0
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
         // There may be multiple widgets active, so update all of them
+        val remoteView = RemoteViews(context.packageName, R.layout.mmedia_widget)
+        val serviceIntent = Intent(context, MusicService::class.java)
+        serviceIntent.setAction("")
+        val servicePendingIntent = PendingIntent.getService(context, 0, serviceIntent, 0)
+
+        remoteView.setOnClickPendingIntent(R.id.btn_Play, servicePendingIntent)
+        remoteView.setOnClickPendingIntent(R.id.btn_Stop, servicePendingIntent)
+        remoteView.setOnClickPendingIntent(R.id.btn_PlayNxt, servicePendingIntent)
+        remoteView.setImageViewResource(R.id.imageView, R.drawable.pic1)
+        //remoteView.setOnClickPendingIntent(R.id.btn_PlayPrev, servicePendingIntent)
+
+        remoteView.setOnClickPendingIntent(R.id.btn_prevImg, imgPendingIntent(context, PIC1))
+        remoteView.setOnClickPendingIntent(R.id.btn_nextImg, imgPendingIntent(context, PIC2))
         for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+            appWidgetManager.updateAppWidget(appWidgetId, remoteView)
         }
     }
 
-    override fun onEnabled(context: Context) {
-        Log.i("widget-app", "First widget enabled")// Enter relevant functionality for when the first widget is created
+    private fun onUpdate(context: Context, remoteViews: RemoteViews) {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val thisAppWidgetComponentName = ComponentName(context.packageName, javaClass.name)
+        val appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidgetComponentName)
+
+        for (appWidgetId in appWidgetIds) {
+            appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews)
+        }
     }
 
-    override fun onDisabled(context: Context) {
-        Log.i("widget-app", "First widget disabled")// Enter relevant functionality for when the last widget is disabled
+    private fun imgPendingIntent(context: Context?, action: String?): PendingIntent? {
+        val intent = Intent(context, javaClass)
+        intent.action = action
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    //button clicks
+    override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        if(intent?.action == context?.getString(R.string.action))
-            Toast.makeText(context,"Action1", Toast.LENGTH_SHORT).show()
-    }
-}
-
-internal fun updateAppWidget(
-    context: Context,
-    appWidgetManager: AppWidgetManager,
-    appWidgetId: Int,
-) {
-    var requestCode = 0
-    val widgetText = context.getString(R.string.appwidget_text)
-    val views = RemoteViews(context.packageName, R.layout.mmedia_widget)
-    //views.setTextViewText(R.id.appwidget_text, widgetText)
-
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.data = Uri.parse("https://www.pja.edu.pl")
-    val pendingIntent = PendingIntent.getActivity(
-        context,
-        requestCode++,
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    views.setOnClickPendingIntent(R.id.btn_Browser, pendingIntent)
-
-    val intent2 = Intent(context.getString(R.string.action))
-    intent2.action = "com.example.widgetapplication.Action1"
-    intent2.component = ComponentName(context, MmediaWidget::class.java)
-    val pendingIntent2 = PendingIntent.getBroadcast(
-        context,
-        requestCode++,
-        intent2,
-        PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    views.setOnClickPendingIntent(R.id.button2, pendingIntent2)
-
-    appWidgetManager.updateAppWidget(appWidgetId, views)
-}
-
-/*
-private static final int GALLERY_REQUEST = 9;
-
-//Widgets
-private ImageView imageView;
-private Context context;
-
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
-
-    context = this;
-
-    //Initialize ImageView widget
-    imageView = findViewById(R.id.imageView);
-
-    //Set onclick listener on ImageView
-    imageView.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            //Open dialog
-            showImageOptionDialog();
-
+        val remoteView = RemoteViews(context.packageName, R.layout.mmedia_widget)
+        if (intent.action == PIC1) {
+            remoteView.setImageViewResource(R.id.imageView, R.drawable.pic1)
+        } else if (intent.action == PIC2) {
+            remoteView.setImageViewResource(R.id.imageView, R.drawable.pic2)
         }
-    });
-}
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse("https://edition.cnn.com/")
+        val browserIntent = PendingIntent.getActivity(
+            context,
+            requestCode++,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        remoteView.setOnClickPendingIntent(R.id.btn_Browser, browserIntent)
 
-    AlertDialog dialog = builder.create();
-    dialog.show();
-}
+        onUpdate(context, remoteView)
 
-//Open phone gallery
-private void getImageFromGallery(){
-    Intent intent = new Intent();
-    intent.setAction(Intent.ACTION_GET_CONTENT);
-    intent.setType("image/*");
-    startActivityForResult(intent, GALLERY_REQUEST);
-}
+        val controlButtons = RemoteViews(
+            context.packageName,
+            R.layout.mmedia_widget
+        )
+        val playIntent = Intent(context, MusicService::class.java).setAction("PLAY")
+        val stopIntent = Intent(context, MusicService::class.java).setAction("STOP")
+        val playNextIntent = Intent(context, MusicService::class.java).setAction("NEXT")
+        val playPrevIntent = Intent(context, MusicService::class.java).setAction("PREV")
 
-@Override
-protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
+        val playPendingIntent = PendingIntent.getService(
+            context, mPlayerRequestCode, playIntent, INTENT_FLAGS
+        )
+        val playNextPendingIntent = PendingIntent.getService(
+            context, mPlayerRequestCode, playNextIntent, INTENT_FLAGS
+        )
+        val playPrevPendingIntent = PendingIntent.getService(
+            context, mPlayerRequestCode, playPrevIntent, INTENT_FLAGS
+        )
+        val stopPendingIntent = PendingIntent.getService(
+            context, mPlayerRequestCode, stopIntent, INTENT_FLAGS
+        )
+        controlButtons.setOnClickPendingIntent(
+            R.id.btn_Play, playPendingIntent
+        )
 
-    //Check if the intent was to pick image, was successful and an image was picked
-    if(requestCode == GALLERY_REQUEST &amp;&amp; resultCode == RESULT_OK &amp;&amp; data != null){
+        controlButtons.setOnClickPendingIntent(
+            R.id.btn_Stop, stopPendingIntent
+        )
 
-        //Get selected image uri from phone gallery
-        Uri selectedImage = data.getData();
+        controlButtons.setOnClickPendingIntent(
+            R.id.btn_PlayNxt, playNextPendingIntent
+        )
 
-        //Display selected photo in image view
-        imageView.setImageURI(selectedImage);
+        onUpdate(context,controlButtons)
     }
-}*/
+
+    internal fun updateAppWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+    ) {
+        val widgetText = context.getString(R.string.appwidget_text)
+    }
+}

@@ -26,7 +26,7 @@
         android:id="@+id/btn_Browser"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="@string/web_page" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -55,10 +55,47 @@
             android:text="@string/next" />
     </LinearLayout>
 
-    <Button
+    <!--<Button
         android:id="@+id/button2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/action" />
+        android:text="@string/action" />-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:orientation="horizontal">
+
+        <!--<Button
+            android:id="@+id/btn_PlayPrev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/prev"
+            app:iconTint="#0C0000" />-->
+
+        <Button
+            android:id="@+id/btn_Play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Play"
+            app:iconTint="#050000" />
+
+        <Button
+            android:id="@+id/btn_Stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Stop" />
+
+        <Button
+            android:id="@+id/btn_PlayNxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Next"
+            app:iconTint="#0C0000" />
+    </LinearLayout>
 
 </LinearLayout>
